@@ -1,0 +1,33 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install android sdk
+      run: |
+        sudo apt-add-repository ppa:maarten-fonville/android-build-tools
+        sudo apt-get update
+        sudo apt-get install android-build-tools-installer
+    - name: Download sources (only arm64)
+      run: ./download_sources.sh --shallow arm64
+
+    - name: Make ARM64 31 tvmini
+      run: make arm64-31-tvmini
+
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        files: |
+          ./out/*.zip
